@@ -24,44 +24,13 @@ useEffect(() => {
   })() 
 }, [])
 
-const savePet= async(e)=>{
-  e.preventDefault()
-  
-  if(!validForm()){
-    return
-  }
-
-  const result = await updateDocument("Pets", id,{...pet})
-  if (!result.statusResponse){
-    setError (result.error)
-    return
-  }
-
-  const editedPets= pets.map(item=>item.id===id ?{id, ...pet} :item)
-  setPets(editedPets)
-  setEditMode(false)
-  setPet({})
-  setId("")
-  
-}
-
-const deletePet= async(id)=>{
-  const result = await deleteDocument("Pets", id)
-  if (!result.statusResponse){
-    setError(result.error)
-    return
-  }
-  const filteredTasks= pets.filter(pet=> pet.id !== id)
-  setPets(filteredTasks)
-}
-
 const validForm=()=>{
   let isValid = true
   setError(null)
 
   
   if(isEmpty(pet)){
-    setError("Debes ingresar una tarea")
+    setError("Debes ingresar una Mascota")
     isValid= false
   }
   return isValid
@@ -83,8 +52,42 @@ if (!result.statusResponse){
   handleClose()
 }
 
-const editPet=(thePet)=>{
+const savePet= async(e)=>{
+  e.preventDefault()
   
+  if(!validForm()){
+    return
+  }
+
+  const result = await updateDocument("Pets", id,{...pet})
+  if (!result.statusResponse){
+    setError (result.error)
+    return
+  }
+
+  const editedPets= pets.map((item)=>item.id===id ?{id, ...pet} :item)
+  setPets(editedPets)
+  setEditMode(false)
+  setPet({})
+  setId("")
+  handleClose()
+}
+
+const deletePet= async(id)=>{
+  const result = await deleteDocument("Pets", id)
+  if (!result.statusResponse){
+    setError(result.error)
+    return
+  }
+  const filteredPets= pets.filter(pet=> pet.id !== id)
+  setPets(filteredPets)
+}
+
+
+
+
+
+const editPet=(thePet)=>{  
   setPet(thePet)
   setEditMode(true)
   setId(thePet.id)
@@ -113,9 +116,10 @@ const editPet=(thePet)=>{
           <Modal.Title>Registro de Mascotas</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        <Form>
+        <Form onSubmit={editMode ? savePet : addPet}>
          <Form.Group controlId="namePet">
-        <Form.Label>Nombre de Mascota</Form.Label>        
+            <Form.Label>Nombre de Mascota</Form.Label> 
+            {pet.id}       
           <Form.Control type="text" placeholder="Ingrese el nombre de la mascota" value={pet.namePet} onChange={(text)=> setPet({...pet, namePet:text.target.value})}  />
          </Form.Group>
         <Form.Group controlId="type">
@@ -146,18 +150,21 @@ const editPet=(thePet)=>{
         <Form.Label>Email</Form.Label>
           <Form.Control type="email" placeholder="Ingrese el correo del Dueño" value={pet.email} onChange={(text)=> setPet({...pet, email:text.target.value})} />
         </Form.Group>
-
-        </Form>
         
+        <Button variant="primary" type="submit" >
+          { editMode ? "Guardar Cambios":"Guardar"}
+          </Button>
 
-        </Modal.Body>
-        <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
             Cerrar
           </Button>
-          <Button variant="primary" onClick={addPet}>
-            Guardar
-          </Button>
+        </Form>
+
+       
+
+        </Modal.Body>
+        <Modal.Footer>
+
         </Modal.Footer>
       </Modal>
       </>
