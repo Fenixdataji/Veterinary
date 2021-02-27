@@ -1,20 +1,18 @@
 import React,{useState, useEffect} from 'react'
 import {isEmpty, size} from 'lodash'
-import {getColletion,deleteDocument} from './actions'
-import {Button, Modal, ModalHeader, ModalBody,Form}from 'react-bootstrap'
-import {Input}from 'react-bootstrap'
+import {getColletion,deleteDocument,addDocument,updateDocument} from './actions'
+import {Button, Modal,Form}from 'react-bootstrap'
 
 
 function App() {
-const[pet, setPet]= useState({
-  namePet:"",type:"",breed:"", dateBirth:"", nameOwner:"", phone:"", adress:"", email:""
-})
+const [pet, setPet]= useState({})
 const [pets, setPets]= useState([])
 const [error, setError] = useState(null)
-
+const [editMode, setEditMode]= useState(false)
 const [show, setShow] = useState(false)
 const handleClose = () => setShow(false)
 const handleShow = () => setShow(true)
+const [id, setId] = useState("")
 
 useEffect(() => {
   (async () => {
@@ -26,6 +24,27 @@ useEffect(() => {
   })() 
 }, [])
 
+const savePet= async(e)=>{
+  e.preventDefault()
+  
+  if(!validForm()){
+    return
+  }
+
+  const result = await updateDocument("Pets", id,{...pet})
+  if (!result.statusResponse){
+    setError (result.error)
+    return
+  }
+
+  const editedPets= pets.map(item=>item.id===id ?{id, ...pet} :item)
+  setPets(editedPets)
+  setEditMode(false)
+  setPet({})
+  setId("")
+  
+}
+
 const deletePet= async(id)=>{
   const result = await deleteDocument("Pets", id)
   if (!result.statusResponse){
@@ -36,10 +55,41 @@ const deletePet= async(id)=>{
   setPets(filteredTasks)
 }
 
+const validForm=()=>{
+  let isValid = true
+  setError(null)
 
+  
+  if(isEmpty(pet)){
+    setError("Debes ingresar una tarea")
+    isValid= false
+  }
+  return isValid
+}
 
-//setPets([...pets, {id:result.data.it, name:pet}])
-//setPet({namePet:"",type:"", breed:"",dateBirth:"",nameOwner:"",phone:"",adress:"",email:""})
+const addPet= async(e)=>{
+  e.preventDefault()
+  if(!validForm()){
+    return
+  }
+
+const result = await addDocument("Pets",{...pet})
+if (!result.statusResponse){
+  setError(result.error)
+  return
+}  
+  setPets([...pets,{id:result.data.id, ...pet}])
+  setPet({})
+  handleClose()
+}
+
+const editPet=(thePet)=>{
+  
+  setPet(thePet)
+  setEditMode(true)
+  setId(thePet.id)
+  handleShow()
+}
 
  return (
   //Add Pet
@@ -64,37 +114,37 @@ const deletePet= async(id)=>{
         </Modal.Header>
         <Modal.Body>
         <Form>
-        <Form.Group controlId="namePet">
-        <Form.Label>Nombre de Mascota</Form.Label>
-          <Form.Control type="text" placeholder="Ingrese el nombre de la mascota" />
-        </Form.Group>
+         <Form.Group controlId="namePet">
+        <Form.Label>Nombre de Mascota</Form.Label>        
+          <Form.Control type="text" placeholder="Ingrese el nombre de la mascota" value={pet.namePet} onChange={(text)=> setPet({...pet, namePet:text.target.value})}  />
+         </Form.Group>
         <Form.Group controlId="type">
         <Form.Label>Tipo de Mascota</Form.Label>
-          <Form.Control type="text" placeholder="Ingrese el tipo de Mascota" />
+          <Form.Control type="text" placeholder="Ingrese el tipo de Mascota" value={pet.type} onChange={(text)=> setPet({...pet, type:text.target.value})}/>
         </Form.Group>
         <Form.Group controlId="breed">
         <Form.Label>Raza de la Mascota</Form.Label>
-          <Form.Control type="text" placeholder="Ingrese la raza de la mascota" />
+          <Form.Control type="text" placeholder="Ingrese la raza de la mascota" value={pet.breed} onChange={(text)=> setPet({...pet, breed:text.target.value})} />
         </Form.Group>
         <Form.Group controlId="dateBirth">
         <Form.Label>Fecha de nacimiento</Form.Label>
-          <Form.Control type="date" placeholder="Ingrese la fecha de nacimiento" />
-        </Form.Group>
+          <Form.Control type="date" placeholder="Ingrese la fecha de nacimiento" value={pet.dateBirth} onChange={(text)=> setPet({...pet, dateBirth:text.target.value})} />
+          </Form.Group>
         <Form.Group controlId="nameOwner">
         <Form.Label>Nombre del Dueño</Form.Label>
-          <Form.Control type="text" placeholder="Ingrese Nombre del Dueño" />
+          <Form.Control type="text" placeholder="Ingrese Nombre del Dueño" value={pet.nameOwner} onChange={(text)=> setPet({...pet, nameOwner:text.target.value})}/>
         </Form.Group>
         <Form.Group controlId="phone">
         <Form.Label>Telefono del Dueño</Form.Label>
-          <Form.Control type="text" placeholder="Ingrese el telefono del Dueño" />
+          <Form.Control type="text" placeholder="Ingrese el telefono del Dueño" value={pet.phone} onChange={(text)=> setPet({...pet, phone:text.target.value})} />
         </Form.Group>
         <Form.Group controlId="adress">
         <Form.Label>Direccion</Form.Label>
-          <Form.Control type="text" placeholder="Ingrese la direccion del Dueño" />
+          <Form.Control type="text" placeholder="Ingrese la direccion del Dueño" value={pet.adress} onChange={(text)=> setPet({...pet, adress:text.target.value})} />
         </Form.Group>
         <Form.Group controlId="email">
         <Form.Label>Email</Form.Label>
-          <Form.Control type="email" placeholder="Ingrese el correo del Dueño" />
+          <Form.Control type="email" placeholder="Ingrese el correo del Dueño" value={pet.email} onChange={(text)=> setPet({...pet, email:text.target.value})} />
         </Form.Group>
 
         </Form>
@@ -105,7 +155,7 @@ const deletePet= async(id)=>{
           <Button variant="secondary" onClick={handleClose}>
             Cerrar
           </Button>
-          <Button variant="primary" onClick={handleClose}>
+          <Button variant="primary" onClick={addPet}>
             Guardar
           </Button>
         </Modal.Footer>
@@ -159,7 +209,8 @@ const deletePet= async(id)=>{
                   </button>
                   <button 
                   className="btn btn-warning btn-sm float-right"
-                  //onClick={()=> editPet(pet)}
+                  onClick={()=> editPet(pet)}
+                  
                   >
                   Editar
                   </button>
