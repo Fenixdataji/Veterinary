@@ -98,7 +98,7 @@ const editPet=(thePet)=>{
   //Add Pet
   
   <div className="container mt-5">
-    <head>VetStore</head>
+    <h1>VetStore</h1>
     <hr/>
 
     <div className="row">
