@@ -12,6 +12,9 @@ const [editMode, setEditMode]= useState(false)
 const [show, setShow] = useState(false)
 const handleClose = () => setShow(false)
 const handleShow = () => setShow(true)
+const [show1, setShow1] = useState(false)
+const handleClose1 = () => setShow1(false)
+const handleShow1 = () => setShow1(true)
 const [id, setId] = useState("")
 
 useEffect(() => {
@@ -81,6 +84,7 @@ const deletePet= async(id)=>{
   }
   const filteredPets= pets.filter(pet=> pet.id !== id)
   setPets(filteredPets)
+  handleClose1()
 }
 
 
@@ -118,8 +122,7 @@ const editPet=(thePet)=>{
         <Modal.Body>
         <Form onSubmit={editMode ? savePet : addPet}>
          <Form.Group controlId="namePet">
-            <Form.Label>Nombre de Mascota</Form.Label> 
-            {pet.id}       
+            <Form.Label>Nombre de Mascota</Form.Label>                    
           <Form.Control type="text" placeholder="Ingrese el nombre de la mascota" value={pet.namePet} onChange={(text)=> setPet({...pet, namePet:text.target.value})}  />
          </Form.Group>
         <Form.Group controlId="type">
@@ -155,7 +158,7 @@ const editPet=(thePet)=>{
           { editMode ? "Guardar Cambios":"Guardar"}
           </Button>
 
-          <Button variant="secondary" onClick={handleClose}>
+          <Button className="btn  float-right" variant="secondary" onClick={handleClose}>
             Cerrar
           </Button>
         </Form>
@@ -208,12 +211,31 @@ const editPet=(thePet)=>{
                   <td >{pet.adress}</td>
                   <td >{pet.email}</td> 
                   <td>
-                  <button 
+                  <>
+                  <Button 
                     className="btn btn-danger btn-sm float-right mx-2"
-                    onClick={()=> deletePet(pet.id)}
+                    onClick={handleShow1}
                   >
                   Eliminar
-                  </button>
+                  </Button>
+                  <Modal show={show1} onHide={handleClose1}>
+                  <Modal.Header closeButton>
+                    <Modal.Title>Eliminar registro de Mascotas</Modal.Title>                    
+                    </Modal.Header>
+                    <Modal.Body>
+
+                    <Button mg-2 variant="primary" type="submit" onClick={()=> deletePet(pet.id)}  >
+                        Sí
+                      </Button>
+
+                      <Button className="btn  float-right"  variant="secondary"  onClick={handleClose1}>
+                        No
+                      </Button>
+
+
+                    </Modal.Body>
+                  </Modal>
+                  </>
                   <button 
                   className="btn btn-warning btn-sm float-right"
                   onClick={()=> editPet(pet)}
